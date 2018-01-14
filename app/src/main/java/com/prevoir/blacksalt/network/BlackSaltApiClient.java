@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class BlackSaltApiClient {
-    public static final String BASE_URL = "http://localhost:8000";
+    public static final String BASE_URL = "http://192.168.0.4:8000";
     private static Retrofit retrofit = null;
     private static BlackSaltApiService blackSaltApiService;
     private static Retrofit getClient(Context context) {
