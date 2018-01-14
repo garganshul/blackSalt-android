@@ -19,9 +19,11 @@ import com.prevoir.blacksalt.fragments.DatePickerFragment;
 import com.prevoir.blacksalt.models.Booking;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,AddBookingFragment.AddBookingInteractionListener,BookingListFragment.OnBookingListFragmentInteractionListener, DatePickerFragment.DatePickerFragmentListener {
+        implements NavigationView.OnNavigationItemSelectedListener,AddBookingFragment.AddBookingInteractionListener,BookingListFragment.OnBookingListFragmentInteractionListener,
+        DatePickerFragment.DatePickerFragmentListener {
 
     private Fragment currentFragment;
+    private FloatingActionButton fab;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,12 +31,11 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 openAddBookingFragment();
-                fab.setVisibility(View.GONE);
             }
         });
 
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity
             if (savedInstanceState != null) {
                 return;
             }
-            fab.setVisibility(View.VISIBLE);
             openBookingListFragment();
         }
     }
@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, bookingListFragment).commit();
         currentFragment = bookingListFragment;
+        fab.setVisibility(View.VISIBLE);
     }
 
     private void openAddBookingFragment() {
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, addBookingFragment).commit();
         currentFragment = addBookingFragment;
+        fab.setVisibility(View.GONE);
     }
 
     @Override
@@ -125,9 +127,9 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         if(id == R.id.add_party){
-
+            openAddBookingFragment();
         }else if(id == R.id.show_all_parties){
-
+            openBookingListFragment();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

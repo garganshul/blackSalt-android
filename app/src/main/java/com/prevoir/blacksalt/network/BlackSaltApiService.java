@@ -19,6 +19,7 @@ public interface BlackSaltApiService {
 
     @POST("api/bookings")
     Call<Booking> saveBooking(@Body Booking booking);
+
 //    @PUT("notifications/{notificationId}/{type}")
 //    Call<Object> putNotificationEvent(@Path("notificationId") String notificationId, @Path("type") String type);
 //    @POST("user/fitnessData/android")

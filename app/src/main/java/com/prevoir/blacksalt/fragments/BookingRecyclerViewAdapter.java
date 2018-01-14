@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.prevoir.blacksalt.R;
@@ -33,10 +34,6 @@ public class BookingRecyclerViewAdapter extends RecyclerView.Adapter<BookingRecy
         this.mValues = items;
     }
 
-    public void addData(Booking item) {
-        this.mValues.add(item);
-    }
-
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -47,9 +44,24 @@ public class BookingRecyclerViewAdapter extends RecyclerView.Adapter<BookingRecy
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position)._id);
-        holder.mContentView.setText(mValues.get(position).title);
+        Booking booking = mValues.get(position);
+        holder.mItem = booking;
+        holder.title.setText(booking.title);
+        String type;
+        if(booking.partyType.equals("ALA_CARTE")){
+            type = "Ala Carte";
+        }else {
+            type = "Buffet";
+        }
+        type+="("+booking.people+")";
+        holder.type.setText(type);
+        holder.amount.setText(holder.itemView.getContext().getResources().getString(R.string.Rs)+booking.totalAmount);
+        holder.date.setText(booking.date);
+        if(booking.status.equals("CONFIRMED")){
+            holder.bookingStatus.setImageResource(R.drawable.btn_check_buttonless_on);
+        }else if(booking.status.equals("PENDING")){
+            holder.bookingStatus.setImageResource(R.drawable.ic_dialog_time);
+        }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,20 +82,21 @@ public class BookingRecyclerViewAdapter extends RecyclerView.Adapter<BookingRecy
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView mIdView;
-        public final TextView mContentView;
+        public final TextView date;
+        public final TextView title;
+        public final TextView type;
+        public final TextView amount;
+        public final ImageView bookingStatus;
         public Booking mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = view.findViewById(R.id.id);
-            mContentView = view.findViewById(R.id.content);
-        }
-
-        @Override
-        public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            date = view.findViewById(R.id.list_item_date);
+            title = view.findViewById(R.id.list_item_title);
+            type = view.findViewById(R.id.list_item_partyType_count);
+            amount = view.findViewById(R.id.list_item_amount);
+            bookingStatus = view.findViewById(R.id.list_item_booking_status);
         }
     }
 }

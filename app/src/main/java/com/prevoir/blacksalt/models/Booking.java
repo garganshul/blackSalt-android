@@ -17,8 +17,8 @@ public class Booking {
     @SerializedName("date")
     public String date;
 
-    @SerializedName("booked")
-    public boolean booked;
+    @SerializedName("status")
+    public String status;
 
     @SerializedName("people")
     public int people;

@@ -123,7 +123,7 @@ public class AddBookingFragment extends Fragment{
                     totalAmountLayout.setVisibility(View.VISIBLE);
                     totalAmountLayout.setHint("Total amount");
                 }else{
-                    partyTypeStr = "PLATE";
+                    partyTypeStr = "BUFFET";
                     totalAmountLayout.setVisibility(View.VISIBLE);
                     totalAmountLayout.setHint("Amount per plate");
                 }
@@ -163,7 +163,7 @@ public class AddBookingFragment extends Fragment{
             return;
         }
 
-        if(TextUtils.isEmpty(partyDateStr)){
+        if(TextUtils.isEmpty(partyTypeStr)){
             partyType.requestFocus();
             Toast.makeText(getContext(),"Please enter party type", Toast.LENGTH_LONG).show();
             return;
@@ -183,7 +183,7 @@ public class AddBookingFragment extends Fragment{
         int totalAmountValue = 0;
         String totalAmountStr = totalAmount.getText().toString();
         if(!TextUtils.isEmpty(totalAmountStr)){
-            if(partyType.equals("ALA_CARTE")){
+            if(partyTypeStr.equals("ALA_CARTE")){
                 totalAmountValue = Integer.valueOf(totalAmountStr);
             }else{
                 totalAmountValue = Integer.valueOf(totalAmountStr) * numberOfPeople;
@@ -191,18 +191,17 @@ public class AddBookingFragment extends Fragment{
         }
 
         Booking booking = new Booking();
-        booking.booked = bookingConfirmed.isChecked();
+        booking.status = bookingConfirmed.isChecked()? "CONFIRMED": "PENDING";
         booking.title = titleStr;
         booking.date = partyDateStr;
         booking.people = numberOfPeople;
-        booking.partyType = partyDateStr;
+        booking.partyType = partyTypeStr;
         booking.advanceAmount = advancedAmountValue;
         booking.totalAmount = totalAmountValue;
-
+        booking.bookingDate = System.currentTimeMillis();
         BlackSaltApiClient.getBlackSaltApiService(getContext()).saveBooking(booking).enqueue(new Callback<Booking>() {
             @Override
             public void onResponse(Call<Booking> call, Response<Booking> response) {
-                System.out.println("~~~~~~saved"+response.body()._id);
                 if(mListener != null){
                     mListener.onBookingAdded(response.body());
                 }
