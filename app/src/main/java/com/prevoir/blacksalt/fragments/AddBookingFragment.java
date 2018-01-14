@@ -1,7 +1,6 @@
 package com.prevoir.blacksalt.fragments;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -204,6 +203,9 @@ public class AddBookingFragment extends Fragment{
             @Override
             public void onResponse(Call<Booking> call, Response<Booking> response) {
                 System.out.println("~~~~~~saved"+response.body()._id);
+                if(mListener != null){
+                    mListener.onBookingAdded(response.body());
+                }
             }
 
             @Override
@@ -248,8 +250,7 @@ public class AddBookingFragment extends Fragment{
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface AddBookingInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onBookingAdded(Booking booking);
     }
 
 }

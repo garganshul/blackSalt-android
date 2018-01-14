@@ -2,8 +2,8 @@ package com.prevoir.blacksalt.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,8 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.prevoir.blacksalt.R;
-import com.prevoir.blacksalt.fragments.dummy.DummyContent;
-import com.prevoir.blacksalt.fragments.dummy.DummyContent.DummyItem;
+import com.prevoir.blacksalt.models.Booking;
+import com.prevoir.blacksalt.network.BlackSaltApiClient;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A fragment representing a list of Items.
@@ -22,12 +28,9 @@ import com.prevoir.blacksalt.fragments.dummy.DummyContent.DummyItem;
  */
 public class BookingListFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
-    private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
-    private int mColumnCount = 1;
-    private OnBookingListFragmentInteractionListener mListener;
 
+    private OnBookingListFragmentInteractionListener mListener;
+    private BookingRecyclerViewAdapter adapter;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -40,7 +43,6 @@ public class BookingListFragment extends Fragment {
     public static BookingListFragment newInstance(int columnCount) {
         BookingListFragment fragment = new BookingListFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,10 +50,6 @@ public class BookingListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
-        }
     }
 
     @Override
@@ -63,16 +61,29 @@ public class BookingListFragment extends Fragment {
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new BookingRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            adapter = new BookingRecyclerViewAdapter(mListener);
+            recyclerView.setAdapter(adapter);
         }
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        BlackSaltApiClient.getBlackSaltApiService(getContext()).getAllBookings().enqueue(new Callback<ArrayList<Booking>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Booking>> call, Response<ArrayList<Booking>> response) {
+                adapter.setData(response.body());
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Booking>> call, Throwable t) {
+
+            }
+        });
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -102,7 +113,6 @@ public class BookingListFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnBookingListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(Booking item);
     }
 }

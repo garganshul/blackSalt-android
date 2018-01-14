@@ -2,6 +2,8 @@ package com.prevoir.blacksalt.network;
 
 import com.prevoir.blacksalt.models.Booking;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -13,7 +15,7 @@ import retrofit2.http.POST;
 
 public interface BlackSaltApiService {
     @GET("api/bookings")
-    Call<Booking[]> getAllBookings();
+    Call<ArrayList<Booking>> getAllBookings();
 
     @POST("api/bookings")
     Call<Booking> saveBooking(@Body Booking booking);

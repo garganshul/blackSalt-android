@@ -1,6 +1,5 @@
 package com.prevoir.blacksalt;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -17,7 +16,7 @@ import android.view.View;
 import com.prevoir.blacksalt.fragments.AddBookingFragment;
 import com.prevoir.blacksalt.fragments.BookingListFragment;
 import com.prevoir.blacksalt.fragments.DatePickerFragment;
-import com.prevoir.blacksalt.fragments.dummy.DummyContent;
+import com.prevoir.blacksalt.models.Booking;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,AddBookingFragment.AddBookingInteractionListener,BookingListFragment.OnBookingListFragmentInteractionListener, DatePickerFragment.DatePickerFragmentListener {
@@ -34,19 +33,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                // Create a new Fragment to be placed in the activity layout
-                AddBookingFragment addBookingFragment = new AddBookingFragment();
-
-                // In case this activity was started with special instructions from an
-                // Intent, pass the Intent's extras to the fragment as arguments
-                addBookingFragment.setArguments(getIntent().getExtras());
-
-                // Add the fragment to the 'fragment_container' FrameLayout
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, addBookingFragment).commit();
-                currentFragment = addBookingFragment;
-
+                openAddBookingFragment();
                 fab.setVisibility(View.GONE);
             }
         });
@@ -60,19 +47,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-//        BlackSaltApiClient.getBlackSaltApiService(this).getAllBookings().enqueue(new Callback<Booking[]>() {
-//            @Override
-//            public void onResponse(Call<Booking[]> call, Response<Booking[]> response) {
-//                Booking[] bookings = response.body();
-//                System.out.println("response:"+bookings.length);
-//            }
-//
-//            @Override
-//            public void onFailure(Call<Booking[]> call, Throwable t) {
-//                System.out.println(t.getLocalizedMessage());
-//            }
-//        });
-
         if (findViewById(R.id.fragment_container) != null) {
 
             // However, if we're being restored from a previous state,
@@ -81,19 +55,36 @@ public class MainActivity extends AppCompatActivity
             if (savedInstanceState != null) {
                 return;
             }
-
-            BookingListFragment bookingListFragment = new BookingListFragment();
-
-            // In case this activity was started with special instructions from an
-            // Intent, pass the Intent's extras to the fragment as arguments
-            bookingListFragment.setArguments(getIntent().getExtras());
-
-            // Add the fragment to the 'fragment_container' FrameLayout
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, bookingListFragment).commit();
-            currentFragment = bookingListFragment;
-
+            fab.setVisibility(View.VISIBLE);
+            openBookingListFragment();
         }
+    }
+
+    private void openBookingListFragment() {
+        BookingListFragment bookingListFragment = new BookingListFragment();
+
+        // In case this activity was started with special instructions from an
+        // Intent, pass the Intent's extras to the fragment as arguments
+        bookingListFragment.setArguments(getIntent().getExtras());
+
+        // Add the fragment to the 'fragment_container' FrameLayout
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, bookingListFragment).commit();
+        currentFragment = bookingListFragment;
+    }
+
+    private void openAddBookingFragment() {
+        // Create a new Fragment to be placed in the activity layout
+        AddBookingFragment addBookingFragment = new AddBookingFragment();
+
+        // In case this activity was started with special instructions from an
+        // Intent, pass the Intent's extras to the fragment as arguments
+        addBookingFragment.setArguments(getIntent().getExtras());
+
+        // Add the fragment to the 'fragment_container' FrameLayout
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, addBookingFragment).commit();
+        currentFragment = addBookingFragment;
     }
 
     @Override
@@ -145,12 +136,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
-
+    public void onBookingAdded(Booking booking) {
+        openBookingListFragment();
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(Booking item) {
 
     }
 

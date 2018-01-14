@@ -9,7 +9,9 @@ import android.widget.TextView;
 import com.prevoir.blacksalt.R;
 import com.prevoir.blacksalt.fragments.BookingListFragment.OnBookingListFragmentInteractionListener;
 import com.prevoir.blacksalt.fragments.dummy.DummyContent.DummyItem;
+import com.prevoir.blacksalt.models.Booking;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,13 +21,22 @@ import java.util.List;
  */
 public class BookingRecyclerViewAdapter extends RecyclerView.Adapter<BookingRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private List<Booking> mValues;
     private final BookingListFragment.OnBookingListFragmentInteractionListener mListener;
 
-    public BookingRecyclerViewAdapter(List<DummyItem> items, BookingListFragment.OnBookingListFragmentInteractionListener listener) {
-        mValues = items;
+    public BookingRecyclerViewAdapter(BookingListFragment.OnBookingListFragmentInteractionListener listener) {
+        mValues = new ArrayList<>();
         mListener = listener;
     }
+
+    public void setData(List<Booking> items) {
+        this.mValues = items;
+    }
+
+    public void addData(Booking item) {
+        this.mValues.add(item);
+    }
+
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -37,8 +48,8 @@ public class BookingRecyclerViewAdapter extends RecyclerView.Adapter<BookingRecy
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        holder.mIdView.setText(mValues.get(position)._id);
+        holder.mContentView.setText(mValues.get(position).title);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,13 +72,13 @@ public class BookingRecyclerViewAdapter extends RecyclerView.Adapter<BookingRecy
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
-        public DummyItem mItem;
+        public Booking mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.id);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            mIdView = view.findViewById(R.id.id);
+            mContentView = view.findViewById(R.id.content);
         }
 
         @Override
