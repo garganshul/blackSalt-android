@@ -4,7 +4,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -15,10 +15,14 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.prevoir.blacksalt.fragments.AddBookingFragment;
+import com.prevoir.blacksalt.fragments.BookingListFragment;
+import com.prevoir.blacksalt.fragments.DatePickerFragment;
+import com.prevoir.blacksalt.fragments.dummy.DummyContent;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,AddBookingFragment.AddBookingInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener,AddBookingFragment.AddBookingInteractionListener,BookingListFragment.OnBookingListFragmentInteractionListener, DatePickerFragment.DatePickerFragmentListener {
 
+    private Fragment currentFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,13 +30,24 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        final FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
 
+                // Create a new Fragment to be placed in the activity layout
+                AddBookingFragment addBookingFragment = new AddBookingFragment();
+
+                // In case this activity was started with special instructions from an
+                // Intent, pass the Intent's extras to the fragment as arguments
+                addBookingFragment.setArguments(getIntent().getExtras());
+
+                // Add the fragment to the 'fragment_container' FrameLayout
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, addBookingFragment).commit();
+                currentFragment = addBookingFragment;
+
+                fab.setVisibility(View.GONE);
             }
         });
 
@@ -67,16 +82,17 @@ public class MainActivity extends AppCompatActivity
                 return;
             }
 
-            // Create a new Fragment to be placed in the activity layout
-            AddBookingFragment firstFragment = new AddBookingFragment();
+            BookingListFragment bookingListFragment = new BookingListFragment();
 
             // In case this activity was started with special instructions from an
             // Intent, pass the Intent's extras to the fragment as arguments
-            firstFragment.setArguments(getIntent().getExtras());
+            bookingListFragment.setArguments(getIntent().getExtras());
 
             // Add the fragment to the 'fragment_container' FrameLayout
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, firstFragment).commit();
+                    .replace(R.id.fragment_container, bookingListFragment).commit();
+            currentFragment = bookingListFragment;
+
         }
     }
 
@@ -122,19 +138,6 @@ public class MainActivity extends AppCompatActivity
         }else if(id == R.id.show_all_parties){
 
         }
-//        if (id == R.id.nav_camera) {
-//            // Handle the camera action
-//        } else if (id == R.id.nav_gallery) {
-//
-//        } else if (id == R.id.nav_slideshow) {
-//
-//        } else if (id == R.id.nav_manage) {
-//
-//        } else if (id == R.id.nav_share) {
-//
-//        } else if (id == R.id.nav_send) {
-//
-//        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -144,5 +147,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
+    }
+
+    @Override
+    public void onDateSet(int year, int month, int day) {
+        if(currentFragment instanceof AddBookingFragment){
+            ((AddBookingFragment)currentFragment).onDateSet(year,month,day);
+        }
     }
 }

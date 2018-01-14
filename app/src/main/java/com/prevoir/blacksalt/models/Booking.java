@@ -7,6 +7,10 @@ import com.google.gson.annotations.SerializedName;
  */
 
 public class Booking {
+
+    @SerializedName("_id")
+    public String _id;
+
     @SerializedName("title")
     public String title;
 
@@ -19,6 +23,15 @@ public class Booking {
     @SerializedName("people")
     public int people;
 
-    @SerializedName("timestamp")
-    public long timestamp;
+    @SerializedName("bookingDate")
+    public long bookingDate;
+
+    @SerializedName("partyType")
+    public String partyType;
+
+    @SerializedName("totalAmount")
+    public int totalAmount;
+
+    @SerializedName("advanceAmount")
+    public int advanceAmount;
 }

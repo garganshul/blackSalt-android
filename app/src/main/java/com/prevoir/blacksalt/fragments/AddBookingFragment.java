@@ -3,12 +3,28 @@ package com.prevoir.blacksalt.fragments;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.prevoir.blacksalt.R;
+import com.prevoir.blacksalt.models.Booking;
+import com.prevoir.blacksalt.network.BlackSaltApiClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -18,7 +34,7 @@ import com.prevoir.blacksalt.R;
  * Use the {@link AddBookingFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddBookingFragment extends Fragment {
+public class AddBookingFragment extends Fragment{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -27,9 +43,13 @@ public class AddBookingFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
+    private TextInputEditText partyDate,title,peopleCount,advanceAmount,totalAmount;
+    private RadioGroup partyType;
+    private CheckBox bookingConfirmed;
+    private TextInputLayout totalAmountLayout,advanceAmountLayout;
     private AddBookingInteractionListener mListener;
-
+    private Button submitButton;
+    private String partyTypeStr;
     public AddBookingFragment() {
         // Required empty public constructor
     }
@@ -64,16 +84,135 @@ public class AddBookingFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_booking, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_add_booking, container, false);
+        partyDate = rootView.findViewById(R.id.party_date);
+        partyDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DialogFragment datePickerFragment = new DatePickerFragment();
+                datePickerFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
+            }
+        });
+
+        title = rootView.findViewById(R.id.booking_title);
+        peopleCount = rootView.findViewById(R.id.booking_people);
+        partyType = rootView.findViewById(R.id.party_type);
+        totalAmount = rootView.findViewById(R.id.total_amount);
+        advanceAmount = rootView.findViewById(R.id.advance_amount);
+        bookingConfirmed = rootView.findViewById(R.id.booking_confirmed);
+        totalAmountLayout = rootView.findViewById(R.id.total_amount_layout);
+        advanceAmountLayout = rootView.findViewById(R.id.advance_amount_layout);
+        submitButton = rootView.findViewById(R.id.booking_submit);
+
+        bookingConfirmed.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+                if(checked){
+                    advanceAmountLayout.setVisibility(View.VISIBLE);
+                }else{
+                    advanceAmountLayout.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        partyType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int id) {
+                RadioButton radioButton = rootView.findViewById(id);
+                if(radioButton.getTag().equals("party_type_alaCarte")){
+                    partyTypeStr = "ALA_CARTE";
+                    totalAmountLayout.setVisibility(View.VISIBLE);
+                    totalAmountLayout.setHint("Total amount");
+                }else{
+                    partyTypeStr = "PLATE";
+                    totalAmountLayout.setVisibility(View.VISIBLE);
+                    totalAmountLayout.setHint("Amount per plate");
+                }
+            }
+        });
+
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onSubmitButtonPressed();
+            }
+        });
+
+        return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+    public void onSubmitButtonPressed() {
+        String titleStr = title.getText().toString();
+        if(TextUtils.isEmpty(titleStr)){
+            Toast.makeText(getContext(),"Please enter party title", Toast.LENGTH_LONG).show();
+            title.requestFocus();
+            return;
         }
+
+        String countStr = peopleCount.getText().toString();
+        if(TextUtils.isEmpty(countStr)){
+            peopleCount.requestFocus();
+            Toast.makeText(getContext(),"Please enter people count", Toast.LENGTH_LONG).show();
+            return;
+        }
+        int numberOfPeople = Integer.valueOf(countStr);
+
+        String partyDateStr = partyDate.getText().toString();
+        if(TextUtils.isEmpty(partyDateStr)){
+            Toast.makeText(getContext(),"Please enter party date", Toast.LENGTH_LONG).show();
+            partyDate.requestFocus();
+            return;
+        }
+
+        if(TextUtils.isEmpty(partyDateStr)){
+            partyType.requestFocus();
+            Toast.makeText(getContext(),"Please enter party type", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        int advancedAmountValue = 0;
+        if(bookingConfirmed.isChecked()){
+            String advanceAmountStr = advanceAmount.getText().toString();
+            if(TextUtils.isEmpty(partyDateStr)){
+                partyType.requestFocus();
+                Toast.makeText(getContext(),"Please enter advance amount", Toast.LENGTH_LONG).show();
+                return;
+            }
+            advancedAmountValue = Integer.valueOf(advanceAmountStr);
+        }
+
+        int totalAmountValue = 0;
+        String totalAmountStr = totalAmount.getText().toString();
+        if(!TextUtils.isEmpty(totalAmountStr)){
+            if(partyType.equals("ALA_CARTE")){
+                totalAmountValue = Integer.valueOf(totalAmountStr);
+            }else{
+                totalAmountValue = Integer.valueOf(totalAmountStr) * numberOfPeople;
+            }
+        }
+
+        Booking booking = new Booking();
+        booking.booked = bookingConfirmed.isChecked();
+        booking.title = titleStr;
+        booking.date = partyDateStr;
+        booking.people = numberOfPeople;
+        booking.partyType = partyDateStr;
+        booking.advanceAmount = advancedAmountValue;
+        booking.totalAmount = totalAmountValue;
+
+        BlackSaltApiClient.getBlackSaltApiService(getContext()).saveBooking(booking).enqueue(new Callback<Booking>() {
+            @Override
+            public void onResponse(Call<Booking> call, Response<Booking> response) {
+                System.out.println("~~~~~~saved"+response.body()._id);
+            }
+
+            @Override
+            public void onFailure(Call<Booking> call, Throwable t) {
+                System.out.println("~~~~errror"+t.getLocalizedMessage());
+            }
+        });
     }
+
 
     @Override
     public void onAttach(Context context) {
@@ -92,6 +231,12 @@ public class AddBookingFragment extends Fragment {
         mListener = null;
     }
 
+    public void onDateSet(int year, int month, int day) {
+        if(partyDate != null){
+            partyDate.setText(day+"/"+month+"/"+year);
+        }
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -106,4 +251,5 @@ public class AddBookingFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
 }
